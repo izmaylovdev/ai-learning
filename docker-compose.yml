@@ -1,0 +1,13 @@
+services:
+  chroma:
+    build: .
+    container_name: chroma-db
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./chroma-data:/chroma/chroma
+    environment:
+      - CHROMA_DB_IMPL=duckdb+parquet
+      - CHROMA_PERSIST_DIRECTORY=/chroma/chroma
+    restart: unless-stopped
+
