@@ -1,13 +1,11 @@
 services:
-  chroma:
-    build: .
-    container_name: chroma-db
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: qdrant-db
     ports:
-      - "8000:8000"
+      - "6333:6333"
+      - "6334:6334"
     volumes:
-      - ./chroma-data:/chroma/chroma
-    environment:
-      - CHROMA_DB_IMPL=duckdb+parquet
-      - CHROMA_PERSIST_DIRECTORY=/chroma/chroma
+      - ./.qdrant-data:/qdrant/storage
     restart: unless-stopped
 
