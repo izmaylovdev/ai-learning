@@ -6,3 +6,5 @@ langchain-text-splitters>=0.3.0
 qdrant-client>=1.7.0
 sentence-transformers>=2.2.0
 
+faster-whisper>=1.0.0
+moviepy>=2.0.0

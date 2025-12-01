@@ -1,263 +1,180 @@
+"""Extract and process PDF files for AI learning."""
+
 import os
 from pathlib import Path
-from typing import List, Dict
-from sentence_transformers import SentenceTransformer
+from typing import List
+import warnings
+warnings.filterwarnings('ignore')
+
+from pypdf import PdfReader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_community.embeddings import HuggingFaceEmbeddings
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams, PointStruct
-from pypdf import PdfReader
-from langchain_text_splitters import RecursiveCharacterTextSplitter
+import uuid
 
-def extract_text_from_pdf(pdf_path: str) -> tuple[str, Dict]:
-    """
-    Extract text from a PDF file.
-
-    Args:
-        pdf_path (str): Path to the PDF file
-
-    Returns:
-        tuple: (extracted text content, metadata dict)
-    """
-    try:
-        reader = PdfReader(pdf_path)
-        text_content = []
-
-        for page_num, page in enumerate(reader.pages, 1):
-            text = page.extract_text()
-            if text.strip():
-                text_content.append(text)
-
-        full_text = '\n'.join(text_content)
-
-        metadata = {
-            'source': os.path.basename(pdf_path),
-            'file_path': pdf_path,
-            'total_pages': len(reader.pages)
-        }
-
-        return full_text, metadata
-
-    except Exception as e:
-        print(f"Error processing {pdf_path}: {str(e)}")
-        return None, None
+import config
 
 
-def chunk_text(text: str, chunk_size: int = 1000, chunk_overlap: int = 200) -> List[str]:
-    """
-    Split text into chunks using RecursiveCharacterTextSplitter.
-    """
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=chunk_size,
-        chunk_overlap=chunk_overlap,
-        length_function=len,
-        separators=["\n\n", "\n", " ", ""]
-    )
+class PDFProcessor:
+    """Process PDF files: extract text and store in vector DB."""
 
-    chunks = text_splitter.split_text(text)
-    print(f"Created {len(chunks)} chunks from text")
-    return chunks
+    def __init__(self):
+        """Initialize PDF processor."""
+        print("Initializing PDF Processor...")
 
-
-def initialize_vector_store(collection_name: str = "pdf_documents", model_name: str = "all-MiniLM-L6-v2",
-                            qdrant_url: str = "http://localhost:6333") -> tuple[QdrantClient, SentenceTransformer]:
-    """
-    Initialize or connect to Qdrant vector store.
-    """
-    # Initialize the embedding model
-    model = SentenceTransformer(model_name)
-    embedding_dim = model.get_sentence_embedding_dimension()
-
-    # Initialize Qdrant client
-    client = QdrantClient(url=qdrant_url)
-
-    # Check if collection exists, if not create it
-    collections = client.get_collections().collections
-    collection_exists = any(col.name == collection_name for col in collections)
-
-    if collection_exists:
-        print(f"Connected to existing Qdrant collection: {collection_name}")
-    else:
-        print(f"Creating new Qdrant collection: {collection_name}")
-        client.create_collection(
-            collection_name=collection_name,
-            vectors_config=VectorParams(size=embedding_dim, distance=Distance.COSINE)
+        # Initialize text splitter
+        self.text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=config.CHUNK_SIZE,
+            chunk_overlap=config.CHUNK_OVERLAP,
+            length_function=len,
         )
 
-    return client, model
-
-
-def store_chunks_in_vector_db(
-        chunks: List[str],
-        metadata: Dict,
-        collection_name: str = "pdf_documents",
-        model_name: str = "all-MiniLM-L6-v2",
-        qdrant_url: str = "http://localhost:6333"
-) -> None:
-    # Initialize the vector store
-    client, model = initialize_vector_store(collection_name, model_name, qdrant_url)
-
-    # Get current collection count for unique IDs
-    collection_info = client.get_collection(collection_name)
-    existing_count = collection_info.points_count
-
-    # Generate embeddings for chunks
-    print(f"Generating embeddings for {len(chunks)} chunks...")
-    embeddings = model.encode(chunks, show_progress_bar=True, convert_to_numpy=True)
-
-    # Prepare points for Qdrant
-    points = []
-    for i, (chunk, embedding) in enumerate(zip(chunks, embeddings)):
-        chunk_metadata = metadata.copy()
-        chunk_metadata['chunk_index'] = i
-        chunk_metadata['chunk_total'] = len(chunks)
-        chunk_metadata['text'] = chunk
-
-        point = PointStruct(
-            id=existing_count + i,
-            vector=embedding.tolist(),
-            payload=chunk_metadata
+        # Initialize embeddings
+        print(f"Loading embedding model: {config.EMBEDDING_MODEL}")
+        self.embeddings = HuggingFaceEmbeddings(
+            model_name=config.EMBEDDING_MODEL
         )
-        points.append(point)
 
-    # Upload points to Qdrant
-    client.upsert(
-        collection_name=collection_name,
-        points=points
-    )
+        # Initialize Qdrant client
+        print(f"Connecting to Qdrant at {config.QDRANT_HOST}:{config.QDRANT_PORT}")
+        self.qdrant_client = QdrantClient(
+            host=config.QDRANT_HOST,
+            port=config.QDRANT_PORT
+        )
 
-    print(f"Successfully stored {len(chunks)} chunks in Qdrant vector database")
+        # Create collection if it doesn't exist
+        self._ensure_collection()
 
-    # Get updated count
-    collection_info = client.get_collection(collection_name)
-    print(f"Vector database now contains {collection_info.points_count} total documents")
+    def _ensure_collection(self):
+        """Ensure Qdrant collection exists."""
+        try:
+            collections = self.qdrant_client.get_collections().collections
+            collection_names = [c.name for c in collections]
+
+            if config.COLLECTION_NAME not in collection_names:
+                print(f"Creating collection: {config.COLLECTION_NAME}")
+                self.qdrant_client.create_collection(
+                    collection_name=config.COLLECTION_NAME,
+                    vectors_config=VectorParams(
+                        size=config.EMBEDDING_DIMENSION,
+                        distance=Distance.COSINE
+                    )
+                )
+            else:
+                print(f"Collection {config.COLLECTION_NAME} already exists")
+        except Exception as e:
+            print(f"Error with Qdrant collection: {e}")
+            print("Make sure Qdrant is running (docker-compose up -d)")
+            import sys
+            sys.exit(1)
+
+    def extract_text_from_pdf(self, pdf_path: str) -> str:
+        """Extract text from PDF file."""
+        try:
+            print(f"Extracting text from: {pdf_path}")
+            reader = PdfReader(pdf_path)
+
+            text = []
+            for page_num, page in enumerate(reader.pages, 1):
+                page_text = page.extract_text()
+                if page_text:
+                    text.append(page_text)
+
+            full_text = "\n".join(text)
+            print(f"Extracted {len(reader.pages)} pages, {len(full_text)} characters")
+            return full_text
+        except Exception as e:
+            print(f"Error extracting text from PDF: {e}")
+            return ""
+
+    def process_and_store(self, pdf_name: str, text: str):
+        """Process text and store in Qdrant."""
+        try:
+            # Split text into chunks
+            chunks = self.text_splitter.split_text(text)
+            print(f"Split text into {len(chunks)} chunks")
+
+            # Generate embeddings and store in Qdrant
+            points = []
+            for idx, chunk in enumerate(chunks):
+                # Generate embedding
+                embedding = self.embeddings.embed_query(chunk)
+
+                # Create point
+                point = PointStruct(
+                    id=str(uuid.uuid4()),
+                    vector=embedding,
+                    payload={
+                        "source": pdf_name,
+                        "type": "pdf_document",
+                        "chunk_index": idx,
+                        "text": chunk
+                    }
+                )
+                points.append(point)
+
+            # Upload to Qdrant
+            self.qdrant_client.upsert(
+                collection_name=config.COLLECTION_NAME,
+                points=points
+            )
+            print(f"Stored {len(points)} chunks in Qdrant")
+
+        except Exception as e:
+            print(f"Error processing and storing text: {e}")
+
+    def process_pdf(self, pdf_path: str):
+        """Complete pipeline: extract text and store."""
+        pdf_path = Path(pdf_path)
+        if not pdf_path.exists():
+            print(f"Error: PDF file not found: {pdf_path}")
+            return
+
+        print(f"\n{'='*60}")
+        print(f"Processing PDF: {pdf_path.name}")
+        print(f"{'='*60}")
+
+        # Step 1: Extract text
+        text = self.extract_text_from_pdf(str(pdf_path))
+        if not text:
+            print("Failed to extract text. Skipping PDF.")
+            return
+
+        # Step 2: Process and store in vector DB
+        self.process_and_store(pdf_path.name, text)
+
+        print(f"\n✓ Successfully processed: {pdf_path.name}\n")
 
 
-def process_pdf_to_vector_db(
-        pdf_path: str,
-        chunk_size: int = 1000,
-        chunk_overlap: int = 200,
-        collection_name: str = "pdf_documents",
-        model_name: str = "all-MiniLM-L6-v2",
-        qdrant_url: str = "http://localhost:6333"
-) -> None:
-    # Extract text from PDF
-    text, metadata = extract_text_from_pdf(pdf_path)
-
-    if text is None:
-        print(f"Failed to extract text from {pdf_path}")
-        return
-
-    # Chunk the text
-    chunks = chunk_text(text, chunk_size, chunk_overlap)
-
-    # Store chunks in vector database
-    store_chunks_in_vector_db(chunks, metadata, collection_name, model_name, qdrant_url)
-
-
-def process_all_pdfs_in_folder(
-        folder_path: str = "./data",
-        chunk_size: int = 1000,
-        chunk_overlap: int = 200,
-        collection_name: str = "pdf_documents",
-        model_name: str = "all-MiniLM-L6-v2",
-        qdrant_url: str = "http://localhost:6333"
-) -> None:
-    folder = Path(folder_path)
-    pdf_files = list(folder.glob("*.pdf"))
+def main():
+    """Main function to process all PDFs in data directory."""
+    # Get all PDF files
+    data_path = Path(config.DATA_DIR)
+    pdf_files = [f for f in data_path.iterdir() if f.suffix.lower() == '.pdf']
 
     if not pdf_files:
-        print(f"No PDF files found in {folder_path}")
+        print(f"No PDF files found in {config.DATA_DIR}")
         return
 
-    print(f"\nFound {len(pdf_files)} PDF file(s) to process")
-    print(f"{'=' * 80}\n")
+    print(f"Found {len(pdf_files)} PDF file(s) to process")
 
+    # Initialize processor
+    processor = PDFProcessor()
+
+    # Process each PDF
     for pdf_file in pdf_files:
-        print(f"\nProcessing: {pdf_file.name}")
-        process_pdf_to_vector_db(
-            str(pdf_file),
-            chunk_size,
-            chunk_overlap,
-            collection_name,
-            model_name,
-            qdrant_url
-        )
+        try:
+            processor.process_pdf(pdf_file)
+        except Exception as e:
+            print(f"Error processing {pdf_file.name}: {e}")
+            continue
 
-    print(f"\n{'=' * 80}")
-    print("All PDFs processed successfully!")
-    print(f"{'=' * 80}\n")
-
-
-def query_vector_db(
-        query_text: str,
-        collection_name: str = "pdf_documents",
-        model_name: str = "all-MiniLM-L6-v2",
-        qdrant_url: str = "http://localhost:6333",
-        n_results: int = 3
-) -> List[Dict]:
-    # Initialize the vector store
-    client, model = initialize_vector_store(collection_name, model_name, qdrant_url)
-
-    # Check if collection has documents
-    collection_info = client.get_collection(collection_name)
-    if collection_info.points_count == 0:
-        print("No documents in the vector database!")
-        return []
-
-    # Generate embedding for the query
-    query_embedding = model.encode([query_text], convert_to_numpy=True)[0]
-
-    # Search the collection
-    search_results = client.search(
-        collection_name=collection_name,
-        query_vector=query_embedding.tolist(),
-        limit=n_results
-    )
-
-    print(f"\nQuery: {query_text}")
-    print(f"{'=' * 80}\n")
-
-    results = []
-    for i, hit in enumerate(search_results):
-        doc = hit.payload.get('text', '')
-        metadata = {k: v for k, v in hit.payload.items() if k != 'text'}
-        score = hit.score
-
-        print(f"Result {i + 1} (Score: {score:.4f}):")
-        print(f"Source: {metadata.get('source', 'Unknown')}")
-        print(f"Chunk: {metadata.get('chunk_index', 0) + 1}/{metadata.get('chunk_total', 0)}")
-        print(f"Content: {doc[:200]}...")
-        print(f"{'-' * 80}\n")
-
-        results.append({
-            'document': doc,
-            'metadata': metadata,
-            'score': float(score)
-        })
-
-    return results
+    print("\n" + "="*60)
+    print("All PDFs processed!")
+    print("="*60)
 
 
 if __name__ == "__main__":
-    # Process all PDFs in the data folder and store in Qdrant vector database
-    print("Starting the extraction magic...")
-    print("=" * 80)
+    main()
 
-    process_all_pdfs_in_folder(
-        folder_path="./data",
-        chunk_size=1000,
-        chunk_overlap=200,
-        collection_name="pdf_documents"
-    )
-
-    # Example query to test the RAG system
-    print("\n" + "=" * 80)
-    print("Testing RAG Query System")
-    print("=" * 80)
-
-    try:
-        query_vector_db(
-            query_text="What is RAG?",
-            n_results=3
-        )
-    except Exception as e:
-        print(f"Query test skipped (vector database might be empty): {e}")
