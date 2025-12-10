@@ -7,8 +7,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Paths
-DATA_DIR = "data"
-OUTPUT_DIR = "output"
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.join(PROJECT_ROOT, "data")
+OUTPUT_DIR = os.path.join(PROJECT_ROOT, "data", "output")
 AUDIO_DIR = os.path.join(OUTPUT_DIR, "audio")
 TRANSCRIPTS_DIR = os.path.join(OUTPUT_DIR, "transcripts")
 
