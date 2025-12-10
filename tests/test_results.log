@@ -1,0 +1,54 @@
+================================================================================
+RAG Question Answering Test Results
+================================================================================
+Test run: 2025-12-10 07:48:38
+Total questions: 3
+Successful: 3
+Failed: 0
+================================================================================
+
+
+================================================================================
+Question 1
+================================================================================
+
+Q: What are the production 'Do's' for RAG?
+
+A: The provided context discusses the pros and cons of RAG, including its ability to reduce hallucinations and its modularity. It also mentions that RAG can be created in many ways (e.g., with notebook LLMs, proprietary LLMs, LM Studio, or local LLMs). However, it does not explicitly list "production 'Do's'" for RAG.
+
+Sources:
+--------------------------------------------------------------------------------
+  - 1st Part_Productized Enterprise RAG.mp4 (relevance: 0.41)
+
+Chunks used: 3
+
+
+================================================================================
+Question 2
+================================================================================
+
+Q: What is the difference between standard retrieval and the ColPali approach?
+
+A: The context provided does not contain information about the "ColPali approach," so I cannot explain the difference between standard retrieval and the ColPali approach.
+
+Sources:
+--------------------------------------------------------------------------------
+  - 2 part Databases for GenAI.mp4 (relevance: 0.43)
+
+Chunks used: 3
+
+
+================================================================================
+Question 3
+================================================================================
+
+Q: Why is hybrid search better than vector-only search?
+
+A: Hybrid search provides much better results than relying solely on vector search because it incorporates standard searches like keyword search and other approaches. This combined "hybrid approach" leads to a more reliable system.
+
+Sources:
+--------------------------------------------------------------------------------
+  - 1 part. RAG Intro.mp4 (relevance: 0.55)
+
+Chunks used: 3
+
