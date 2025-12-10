@@ -8,12 +8,12 @@ warnings.filterwarnings('ignore')
 from moviepy import VideoFileClip
 from faster_whisper import WhisperModel
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_community.embeddings import HuggingFaceEmbeddings
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams, PointStruct
 import uuid
 
 import config
+from embeddings import get_embedding_model
 
 
 class VideoProcessor:
@@ -38,11 +38,8 @@ class VideoProcessor:
             length_function=len,
         )
 
-        # Initialize embeddings
-        print(f"Loading embedding model: {config.EMBEDDING_MODEL}")
-        self.embeddings = HuggingFaceEmbeddings(
-            model_name=config.EMBEDDING_MODEL
-        )
+        # Initialize embeddings using modular architecture
+        self.embeddings = get_embedding_model("huggingface")
 
         # Initialize Qdrant client
         print(f"Connecting to Qdrant at {config.QDRANT_HOST}:{config.QDRANT_PORT}")

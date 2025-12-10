@@ -1,3 +1,5 @@
 data
 .qdrant-data
-output
+.env
+.idea
+__pycache__
