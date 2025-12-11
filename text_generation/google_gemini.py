@@ -35,7 +35,7 @@ class GeminiGenerator(GeneratorInterface):
     def generate(self, prompt: str) -> str:
         try:
             response = self.client.models.generate_content(
-                model='gemini-2.5-flash',
+                model=config.GEMINI_MODEL,
                 contents=prompt,
                 config={
                     'temperature': self.generation_config["temperature"],
