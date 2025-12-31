@@ -1,3 +1,5 @@
+version: "3.8"
+
 services:
   qdrant:
     image: qdrant/qdrant:latest
@@ -9,3 +11,7 @@ services:
       - ./.qdrant-data:/qdrant/storage
     restart: unless-stopped
 
+  openwebui:
+    image: ghcr.io/open-webui/open-webui:main
+    ports:
+      - "3000:8080"

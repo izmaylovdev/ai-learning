@@ -16,22 +16,37 @@ class RAGQuestionAnswerer:
         self,
         embedding_model: EmbeddingInterface = None,
         vector_store: VectorStoreInterface = None,
-        generator: GeneratorInterface = None
+        generator: GeneratorInterface = None,
+        embedding_backend: str = None,
+        vector_store_backend: str = None,
+        generator_backend: str = None,
+        generator_kwargs: Dict = None,
     ):
         """
         Initialize RAG system with pluggable components.
 
         Args:
-            embedding_model: Embedding model implementation (default: HuggingFace)
-            vector_store: Vector database implementation (default: Qdrant)
-            generator: Text generator implementation (default: HuggingFace)
+            embedding_model: Embedding model implementation (default: from config)
+            vector_store: Vector database implementation (default: from config)
+            generator: Text generator implementation (default: from config)
         """
         print("Initializing RAG Question Answering System...")
 
+        # Use config defaults unless overridden
+        self.embedding_backend = embedding_backend or config.EMBEDDING_BACKEND
+        self.vector_store_backend = vector_store_backend or config.VECTOR_STORE_BACKEND
+        self.generator_backend = generator_backend or config.GENERATOR_BACKEND
+        self.generator_kwargs = generator_kwargs or {}
+
+        # Ensure generator kwargs include sensible defaults from config
+        # For HuggingFace generator, ensure max_new_tokens is set
+        if self.generator_backend.lower() == "huggingface":
+            self.generator_kwargs.setdefault("max_new_tokens", config.HUGGINGFACE_MAX_NEW_TOKENS)
+
         # Initialize components with defaults if not provided
-        self.embeddings = embedding_model or get_embedding_model("huggingface")
-        self.vector_store = vector_store or get_vector_store("qdrant")
-        self.generator = generator or get_generator("gemini")
+        self.embeddings = embedding_model or get_embedding_model(self.embedding_backend)
+        self.vector_store = vector_store or get_vector_store(self.vector_store_backend)
+        self.generator = generator or get_generator(self.generator_backend, **self.generator_kwargs)
 
     def retrieve_relevant_chunks(self, query: str, top_k: int = None, source_filter: str = None) -> List[Dict]:
         """
@@ -216,10 +231,39 @@ Examples:
         help='List all available sources and exit'
     )
 
+    # New flags to override backends and generator params
+    parser.add_argument(
+        '--generator',
+        type=str,
+        default=None,
+        help='Override generator backend (e.g. gemini or huggingface)'
+    )
+    parser.add_argument(
+        '--generator-max-tokens',
+        type=int,
+        default=None,
+        help='Override max tokens/new tokens for the generator (backend-specific)'
+    )
+
     args = parser.parse_args()
 
-    # Initialize RAG system
-    rag = RAGQuestionAnswerer()
+    # Build generator kwargs from CLI and config
+    generator_kwargs = {}
+    if args.generator_max_tokens is not None:
+        # map CLI flag to the appropriate generator kwarg name
+        # huggingface expects max_new_tokens, gemini expects max_output_tokens
+        if (args.generator or config.GENERATOR_BACKEND).lower() == 'huggingface':
+            generator_kwargs['max_new_tokens'] = args.generator_max_tokens
+        else:
+            generator_kwargs['max_output_tokens'] = args.generator_max_tokens
+
+    # Initialize RAG system using config/backends or CLI overrides
+    rag = RAGQuestionAnswerer(
+        embedding_backend=config.EMBEDDING_BACKEND,
+        vector_store_backend=config.VECTOR_STORE_BACKEND,
+        generator_backend=(args.generator or config.GENERATOR_BACKEND),
+        generator_kwargs=generator_kwargs or None,
+    )
 
     # List sources if requested
     if args.list_sources:
@@ -249,4 +293,3 @@ Examples:
 
 if __name__ == "__main__":
     main()
-

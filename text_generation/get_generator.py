@@ -1,10 +1,7 @@
 from text_generation.generator import GeneratorInterface
 
-def get_generator(generator_type: str = "huggingface", **kwargs) -> GeneratorInterface:
-    if generator_type.lower() == "huggingface":
-        from text_generation.gpt_oss_20b import GPTOss20BGenerator
-        return GPTOss20BGenerator(**kwargs)
-    elif generator_type.lower() == "gemini":
+def get_generator(generator_type: str = "gemini", **kwargs) -> GeneratorInterface:
+    if generator_type.lower() == "gemini":
         # Import here to avoid circular dependency
         try:
             from text_generation.google_gemini import GeminiGenerator
