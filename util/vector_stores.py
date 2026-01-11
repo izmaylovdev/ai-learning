@@ -4,7 +4,7 @@ from typing import List, Dict, Any
 from qdrant_client import QdrantClient
 from qdrant_client.models import Filter, FieldCondition, MatchValue
 import config
-from interfaces import VectorStoreInterface
+from util.interfaces import VectorStoreInterface
 
 
 class QdrantVectorStore(VectorStoreInterface):

@@ -1,8 +1,6 @@
 """Extract and process PDF files for AI learning."""
 
-import os
 from pathlib import Path
-from typing import List
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -13,7 +11,7 @@ from qdrant_client.models import Distance, VectorParams, PointStruct
 import uuid
 
 import config
-from embeddings import get_embedding_model
+from util.embeddings import get_embedding_model
 
 
 class PDFProcessor:

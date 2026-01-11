@@ -3,7 +3,7 @@
 from typing import List
 from langchain_huggingface import HuggingFaceEmbeddings
 import config
-from interfaces import EmbeddingInterface
+from util.interfaces import EmbeddingInterface
 
 
 class HuggingFaceEmbeddingModel(EmbeddingInterface):

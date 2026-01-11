@@ -13,7 +13,7 @@ from qdrant_client.models import Distance, VectorParams, PointStruct
 import uuid
 
 import config
-from embeddings import get_embedding_model
+from util.embeddings import get_embedding_model
 
 
 class VideoProcessor:
