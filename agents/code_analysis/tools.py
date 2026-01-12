@@ -1,17 +1,42 @@
+"""LangChain tools for code analysis operations."""
 from __future__ import annotations
 import glob
 import os
+from typing import Optional, Dict
 from langchain.tools import tool
+from .indexer import build_index
 
-# Global variable to store repository root path
-_REPO_ROOT = os.path.abspath("")
+# Global variables to store repository root path and file index
+_REPO_ROOT = os.path.abspath(".")
+_FILE_INDEX: Dict[str, str] = {}
+
+
+def initialize_code_analysis(root_path: Optional[str] = None) -> None:
+    """Initialize code analysis tools with repository root path and build file index.
+
+    Args:
+        root_path: The absolute path to the repository root directory (default: current directory)
+    """
+    global _REPO_ROOT, _FILE_INDEX
+    _REPO_ROOT = os.path.abspath(root_path or ".")
+    print(f"Code analysis initialized with root: {_REPO_ROOT}")
+    print("Building repository index...")
+    _FILE_INDEX = build_index(_REPO_ROOT)
+    print(f"Indexed {len(_FILE_INDEX)} files")
+
+
 def set_repo_root(root_path: str) -> None:
-    """Set the repository root path for all tools.
+    """Set the repository root path for all tools and rebuild index.
+
     Args:
         root_path: The absolute path to the repository root directory.
     """
-    global _REPO_ROOT
+    global _REPO_ROOT, _FILE_INDEX
     _REPO_ROOT = os.path.abspath(root_path)
+    print(f"Repository root updated to: {_REPO_ROOT}")
+    print("Rebuilding repository index...")
+    _FILE_INDEX = build_index(_REPO_ROOT)
+    print(f"Indexed {len(_FILE_INDEX)} files")
 
 @tool
 def read_file(path: str, max_chars: int = 10000) -> str:
@@ -94,5 +119,60 @@ def list_files(directory: str = ".", pattern: str = "*") -> str:
     except Exception as e:
         return f"Error listing files: {e}"
 
+@tool
+def search_repository(query: str) -> str:
+    """Search through the repository index to find relevant files based on a query.
+
+    This tool searches file paths and descriptions to find files related to your query.
+    Use this to discover relevant files before reading them.
+
+    Args:
+        query: Search query (keywords or concepts to find in file paths and descriptions)
+
+    Returns:
+        List of relevant files with their descriptions
+    """
+    if not _FILE_INDEX:
+        return "Error: Repository index not initialized. Please initialize code analysis first."
+
+    query_lower = query.lower()
+    query_parts = query_lower.split()
+
+    results = []
+    for file_path, description in _FILE_INDEX.items():
+        # Get relative path for display
+        try:
+            rel_path = os.path.relpath(file_path, _REPO_ROOT)
+        except ValueError:
+            rel_path = file_path
+
+        # Calculate relevance score
+        score = 0
+        search_text = (rel_path + " " + description).lower()
+
+        for part in query_parts:
+            if part in search_text:
+                score += search_text.count(part)
+
+        if score > 0:
+            results.append((score, rel_path, description))
+
+    if not results:
+        return f"No files found matching query: '{query}'"
+
+    # Sort by relevance score (highest first)
+    results.sort(reverse=True, key=lambda x: x[0])
+
+    # Format output
+    output_lines = [f"Found {len(results)} relevant file(s):\n"]
+    for score, path, desc in results[:20]:  # Limit to top 20 results
+        output_lines.append(f"📄 {path}")
+        output_lines.append(f"   {desc}\n")
+
+    if len(results) > 20:
+        output_lines.append(f"... and {len(results) - 20} more files")
+
+    return "\n".join(output_lines)
+
 def get_all_tools() -> list:
-    return [read_file, list_files]
+    return [read_file, list_files, search_repository]

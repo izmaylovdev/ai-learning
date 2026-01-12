@@ -1,35 +1,28 @@
-"""Small CLI wrapper to query the codebase agent from command line."""
+"""CLI wrapper to query the code analysis agent from command line."""
 from __future__ import annotations
 
 import argparse
-from .agent import CodebaseAgent
-
-
-def simple_llm_stub(prompt: str) -> str:
-    # Very small heuristic 'LLM' to extract lines that mention the question tokens.
-    # For production, replace with a real LLM call.
-    qline = "Question:".lower()
-    lines = []
-    for part in prompt.split("\n\n"):
-        if qline in part.lower():
-            lines.append(part)
-    # Fallback: return prompt tail
-    return "\n\n".join(lines) or prompt[-2000:]
+from .agent import analyze_code
+from .tools import initialize_code_analysis
 
 
 def main():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description="Analyze code repository using AI agent"
+    )
     parser.add_argument("question", help="Question about the repository codebase")
-    parser.add_argument("--root", default=".")
-    parser.add_argument("--max-files", type=int, default=500)
+    parser.add_argument("--root", default=".", help="Repository root path (default: current directory)")
     args = parser.parse_args()
 
-    agent = CodebaseAgent(root_path=args.root, llm_answer=simple_llm_stub)
-    print("Building index (this may take a moment)...")
-    agent.build_index(max_files=args.max_files)
-    ans = agent.answer_question(args.question)
+    # Initialize code analysis tools with the repository root
+    initialize_code_analysis(args.root)
+
+    # Use the analyze_code tool
+    print("Analyzing repository...")
+    answer = analyze_code.invoke({"question": args.question})
+
     print("\nAnswer:\n")
-    print(ans)
+    print(answer)
 
 
 if __name__ == "__main__":

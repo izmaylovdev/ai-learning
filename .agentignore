@@ -1,2 +1,40 @@
-/data
-/.qdrant-data
+# Data directories
+data
+.qdrant-data
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Test artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Logs
+*.log

@@ -27,7 +27,8 @@ def main():
     args = parser.parse_args()
 
     # Ensure project root is on PYTHONPATH so imports work when run from IDE
-    project_root = os.path.dirname(os.path.abspath(__file__))
+    # Get the parent directory of model_server (the project root)
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     if project_root not in sys.path:
         sys.path.insert(0, project_root)
 

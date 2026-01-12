@@ -1,14 +1,14 @@
 """code_analysis package
-Exports CodebaseAgent for querying the repository codebase.
+Exports analyze_code tool for querying the repository codebase.
 """
 
 from importlib import import_module
 
 try:
     _mod = import_module(f"{__name__}.agent")
-    CodebaseAgent = getattr(_mod, "CodebaseAgent")
+    analyze_code = getattr(_mod, "analyze_code")
 except Exception:  # pragma: no cover
     # If import fails (static analysis / partial environment), provide a safe fallback.
-    CodebaseAgent = None
+    analyze_code = None
 
-__all__ = ["CodebaseAgent"]
+__all__ = ["analyze_code"]
