@@ -1,7 +1,7 @@
 """LM Studio model for LangChain - importable module."""
 from langchain_openai import ChatOpenAI
 
-model = ChatOpenAI(
+llm_studio_model = ChatOpenAI(
     model="local-model",
     base_url="http://localhost:1234/v1",
     api_key="lm-studio",

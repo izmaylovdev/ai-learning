@@ -4,8 +4,8 @@ import os
 import time
 import uuid
 
-from linkedin_post_generation.agent import agent as linkedin_agent
-from model_server.models import CompletionRequest, ChatCompletionRequest
+from linkedin_post_generation.agent import agent
+from model_server.schemas import CompletionRequest, ChatCompletionRequest
 import config
 
 app = FastAPI(title="Local OpenAI-compatible model server")
@@ -20,10 +20,6 @@ app.add_middleware(
 
 GENERATOR_TYPE = os.getenv("GENERATOR_TYPE", config.GENERATOR_BACKEND)
 
-# Initialize LinkedIn Post Agent
-def get_linkedin_agent():
-    """Get the LinkedIn agent instance."""
-    return linkedin_agent
 # Add logging for submodel selection
 import logging
 
@@ -60,9 +56,6 @@ async def chat_completions(req: ChatCompletionRequest):
 
     # Always use LinkedIn agent
     try:
-        # Get LinkedIn agent
-        agent = get_linkedin_agent()
-
         # Use the agent to generate a response
         from langchain_core.messages import HumanMessage
         result = agent.invoke({"messages": [HumanMessage(content=content)]})
@@ -118,8 +111,6 @@ async def completions(req: CompletionRequest):
 
     # Always use LinkedIn agent
     try:
-        # Get LinkedIn agent
-        agent = get_linkedin_agent()
 
         # Use the agent to generate a response
         from langchain_core.messages import HumanMessage
@@ -165,7 +156,6 @@ async def health():
 async def list_linkedin_agents():
     """List all available LinkedIn post generation agents and their metadata."""
     try:
-        agent = get_linkedin_agent()
         agents_info = agent.list_available_agents()
 
         return {

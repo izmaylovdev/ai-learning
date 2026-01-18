@@ -1,18 +1,3 @@
-#!/usr/bin/env python3
-"""Run the model server from an IDE or CLI using uvicorn.
-
-Usage examples:
-
-# Run on localhost:8000
-python run_model_server.py
-
-# Run with reload enabled (useful during development)
-python run_model_server.py --reload
-
-# Change host/port
-python run_model_server.py --host 127.0.0.1 --port 9000
-"""
-
 from argparse import ArgumentParser
 import os
 import sys

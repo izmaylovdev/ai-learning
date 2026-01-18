@@ -3,7 +3,7 @@
 from langchain.agents import create_agent
 from langchain_core.messages import SystemMessage, HumanMessage
 
-from models.lm_studio_model import model
+from models import default_model as model
 from .tools import get_all_tools
 
 from langchain_core.tools import tool
@@ -31,18 +31,27 @@ Response style:
 - Use code blocks for code-related answers.
 """
 
-agent = create_agent(
-    model=model,
-    tools=get_all_tools(),
-    system_prompt=SystemMessage(
-        content=[
-            {
-                "type": "text",
-                "text": SYSTEM_PROMPT.strip()
-            }
-        ]
-    )
-)
+# Cache the agent instance
+_agent_instance = None
+
+
+def get_agent():
+    """Get or create the RAG agent."""
+    global _agent_instance
+    if _agent_instance is None:
+        _agent_instance = create_agent(
+            model=model,
+            tools=get_all_tools(),
+            system_prompt=SystemMessage(
+                content=[
+                    {
+                        "type": "text",
+                        "text": SYSTEM_PROMPT.strip()
+                    }
+                ]
+            )
+        )
+    return _agent_instance
 
 
 @tool
@@ -53,6 +62,7 @@ def ask_rag_agent(
     Use this tool when the question requires information
     from documents, files, or a knowledge base.
     """
+    agent = get_agent()
     response = agent.invoke({"messages": [HumanMessage(question.strip())]})
 
     # LangChain agents may return different shapes

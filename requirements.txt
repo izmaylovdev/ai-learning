@@ -1,3 +1,4 @@
+langchain-core
 langchain-openai
 # Core dependencies
 pypdf>=5.1.0

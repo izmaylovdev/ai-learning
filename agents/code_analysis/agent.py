@@ -6,7 +6,7 @@ from langchain_core.tools import tool
 from typing import Annotated
 import os
 
-from models.lm_studio_model import model
+from models import default_model as model
 from .tools import get_all_tools, initialize_code_analysis
 
 # Initialize code analysis with repository index
@@ -43,18 +43,27 @@ Response style:
 - Provide file paths and line references when applicable.
 """
 
-agent = create_agent(
-    model=model,
-    tools=get_all_tools(),
-    system_prompt=SystemMessage(
-        content=[
-            {
-                "type": "text",
-                "text": SYSTEM_PROMPT.strip()
-            }
-        ]
-    )
-)
+# Cache the agent instance
+_agent_instance = None
+
+
+def get_agent():
+    """Get or create the code analysis agent."""
+    global _agent_instance
+    if _agent_instance is None:
+        _agent_instance = create_agent(
+            model=model,
+            tools=get_all_tools(),
+            system_prompt=SystemMessage(
+                content=[
+                    {
+                        "type": "text",
+                        "text": SYSTEM_PROMPT.strip()
+                    }
+                ]
+            )
+        )
+    return _agent_instance
 
 
 @tool
@@ -65,6 +74,7 @@ def analyze_code(
     Use this tool when the question is about code, repository structure,
     implementation details, or software architecture.
     """
+    agent = get_agent()
     response = agent.invoke({"messages": [HumanMessage(question.strip())]})
 
     # LangChain agents may return different shapes
