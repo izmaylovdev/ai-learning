@@ -1,0 +1,109 @@
+{
+  "agent_name": "rag_agent",
+  "timestamp": "20260126_032241",
+  "total_tests": 2,
+  "successful_tests": 2,
+  "failed_tests": 0,
+  "average_score": 0.5116539643100126,
+  "results": [
+    {
+      "agent_name": "rag_agent",
+      "test_case_id": "rag_001",
+      "question": "What are the production 'Do's' for RAG?",
+      "agent_response": "{'messages': [HumanMessage(content=\"What are the production 'Do's' for RAG?\", additional_kwargs={}, response_metadata={}, id='8cd781a3-6e6d-42c8-99f8-ebea57d7f363'), AIMessage(content='', additional_kwargs={'refusal': None}, response_metadata={'token_usage': {'completion_tokens': 40, 'prompt_tokens': 487, 'total_tokens': 527, 'completion_tokens_details': None, 'prompt_tokens_details': None}, 'model_provider': 'openai', 'model_name': 'openai/gpt-oss-20b', 'system_fingerprint': 'openai/gpt-oss-20b', 'id': 'chatcmpl-x471h5rmefibj8qbgnq729', 'finish_reason': 'tool_calls', 'logprobs': None}, id='lc_run--019bf7e5-0a1d-7eb0-8077-15553d35024b-0', tool_calls=[{'name': 'search_knowledge_base', 'args': {'query': \"production Do's for RAG\", 'top_k': 5}, 'id': '390346542', 'type': 'tool_call'}], invalid_tool_calls=[], usage_metadata={'input_tokens': 487, 'output_tokens': 40, 'total_tokens': 527, 'input_token_details': {}, 'output_token_details': {}}), ToolMessage(content='Error: RAG components not initialized. Please initialize first.', name='search_knowledge_base', id='8d41b24a-76cb-4baa-9ebd-1c7528d1ab3e', tool_call_id='390346542'), AIMessage(content='', additional_kwargs={'refusal': None}, response_metadata={'token_usage': {'completion_tokens': 27, 'prompt_tokens': 543, 'total_tokens': 570, 'completion_tokens_details': None, 'prompt_tokens_details': None}, 'model_provider': 'openai', 'model_name': 'openai/gpt-oss-20b', 'system_fingerprint': 'openai/gpt-oss-20b', 'id': 'chatcmpl-mbtp3i8kg3t11jku5nica0n', 'finish_reason': 'tool_calls', 'logprobs': None}, id='lc_run--019bf7e5-21be-7c60-8cc4-9ce5510c1e05-0', tool_calls=[{'name': 'list_available_sources', 'args': {}, 'id': '494462921', 'type': 'tool_call'}], invalid_tool_calls=[], usage_metadata={'input_tokens': 543, 'output_tokens': 27, 'total_tokens': 570, 'input_token_details': {}, 'output_token_details': {}}), ToolMessage(content='Error: Vector store not initialized.', name='list_available_sources', id='22f7ef0b-24eb-45a1-9788-3b2072b59377', tool_call_id='494462921'), AIMessage(content='I don’t have enough information in the provided documents to answer that.', additional_kwargs={'refusal': None}, response_metadata={'token_usage': {'completion_tokens': 55, 'prompt_tokens': 578, 'total_tokens': 633, 'completion_tokens_details': None, 'prompt_tokens_details': None}, 'model_provider': 'openai', 'model_name': 'openai/gpt-oss-20b', 'system_fingerprint': 'openai/gpt-oss-20b', 'id': 'chatcmpl-rf7ye184gvizkjhgrp7va', 'finish_reason': 'stop', 'logprobs': None}, id='lc_run--019bf7e5-2bf9-7d22-b73a-2abaff87b76c-0', tool_calls=[], invalid_tool_calls=[], usage_metadata={'input_tokens': 578, 'output_tokens': 55, 'total_tokens': 633, 'input_token_details': {}, 'output_token_details': {}})]}",
+      "expected_response": "Production RAG systems should implement proper data ingestion pipelines, use appropriate chunking strategies, implement robust vector search, and ensure proper retrieval relevance scoring.",
+      "accuracy_score": 0.18676380887834634,
+      "relevance_score": 0.875,
+      "clarity_score": 0.5199999999999999,
+      "overall_score": 0.5272546029594488,
+      "execution_time_ms": 11934.722000000002,
+      "timestamp": "2026-01-26T03:22:33.251400",
+      "context": {
+        "expected_facts": [
+          "data ingestion",
+          "chunking strategies",
+          "vector search",
+          "retrieval relevance",
+          "production"
+        ]
+      },
+      "success": true,
+      "error_message": null,
+      "metric_results": {
+        "accuracy": {
+          "score": 0.18676380887834634,
+          "details": {
+            "similarity_score": 0.07793968146391055,
+            "factual_content_score": 0.2,
+            "uncertainty_handling_score": 0.8
+          }
+        },
+        "relevance": {
+          "score": 0.875,
+          "details": {
+            "keyword_overlap_score": 0.75,
+            "question_type_score": 1.0,
+            "focus_score": 1.0
+          }
+        },
+        "clarity": {
+          "score": 0.5199999999999999,
+          "details": {
+            "readability_score": 0.7,
+            "structure_score": 0.5,
+            "complexity_score": 0.3
+          }
+        }
+      }
+    },
+    {
+      "agent_name": "rag_agent",
+      "test_case_id": "rag_002",
+      "question": "What is the difference between standard retrieval and the ColPali approach?",
+      "agent_response": "{'messages': [HumanMessage(content='What is the difference between standard retrieval and the ColPali approach?', additional_kwargs={}, response_metadata={}, id='ab7f045a-7393-4dc8-963c-2d1080c8d89d'), AIMessage(content='', additional_kwargs={'refusal': None}, response_metadata={'token_usage': {'completion_tokens': 40, 'prompt_tokens': 489, 'total_tokens': 529, 'completion_tokens_details': None, 'prompt_tokens_details': None}, 'model_provider': 'openai', 'model_name': 'openai/gpt-oss-20b', 'system_fingerprint': 'openai/gpt-oss-20b', 'id': 'chatcmpl-3kl8zsh9pyce1ojh2qympe', 'finish_reason': 'tool_calls', 'logprobs': None}, id='lc_run--019bf7e5-38ba-7303-a36e-020f68dc260a-0', tool_calls=[{'name': 'search_knowledge_base', 'args': {'query': 'standard retrieval ColPali difference', 'top_k': 5}, 'id': '578516704', 'type': 'tool_call'}], invalid_tool_calls=[], usage_metadata={'input_tokens': 489, 'output_tokens': 40, 'total_tokens': 529, 'input_token_details': {}, 'output_token_details': {}}), ToolMessage(content='Error: RAG components not initialized. Please initialize first.', name='search_knowledge_base', id='4808c75e-5170-4812-b512-eba644b049be', tool_call_id='578516704'), AIMessage(content='', additional_kwargs={'refusal': None}, response_metadata={'token_usage': {'completion_tokens': 30, 'prompt_tokens': 545, 'total_tokens': 575, 'completion_tokens_details': None, 'prompt_tokens_details': None}, 'model_provider': 'openai', 'model_name': 'openai/gpt-oss-20b', 'system_fingerprint': 'openai/gpt-oss-20b', 'id': 'chatcmpl-ul4x7a55w7rdq720n3x34', 'finish_reason': 'tool_calls', 'logprobs': None}, id='lc_run--019bf7e5-42b3-7c73-b8a7-fd3c216ee8a9-0', tool_calls=[{'name': 'list_available_sources', 'args': {}, 'id': '552470445', 'type': 'tool_call'}], invalid_tool_calls=[], usage_metadata={'input_tokens': 545, 'output_tokens': 30, 'total_tokens': 575, 'input_token_details': {}, 'output_token_details': {}}), ToolMessage(content='Error: Vector store not initialized.', name='list_available_sources', id='974e91e5-1bd7-41b2-aba1-961c57fdeda8', tool_call_id='552470445'), AIMessage(content='I don’t have enough information in the provided documents to answer that.', additional_kwargs={'refusal': None}, response_metadata={'token_usage': {'completion_tokens': 32, 'prompt_tokens': 580, 'total_tokens': 612, 'completion_tokens_details': None, 'prompt_tokens_details': None}, 'model_provider': 'openai', 'model_name': 'openai/gpt-oss-20b', 'system_fingerprint': 'openai/gpt-oss-20b', 'id': 'chatcmpl-pwpimwz4qz48zinl1mcjr', 'finish_reason': 'stop', 'logprobs': None}, id='lc_run--019bf7e5-4e21-7b81-8cfb-ce6934e09d08-0', tool_calls=[], invalid_tool_calls=[], usage_metadata={'input_tokens': 580, 'output_tokens': 32, 'total_tokens': 612, 'input_token_details': {}, 'output_token_details': {}})]}",
+      "expected_response": "ColPali uses visual document understanding to retrieve information from documents as images, while standard retrieval processes text-based chunks from parsed documents.",
+      "accuracy_score": 0.11101711983887212,
+      "relevance_score": 0.8571428571428572,
+      "clarity_score": 0.5199999999999999,
+      "overall_score": 0.4960533256605764,
+      "execution_time_ms": 7730.3550000000005,
+      "timestamp": "2026-01-26T03:22:40.997129",
+      "context": {
+        "expected_facts": [
+          "visual document understanding",
+          "images",
+          "text-based chunks",
+          "parsed documents"
+        ]
+      },
+      "success": true,
+      "error_message": null,
+      "metric_results": {
+        "accuracy": {
+          "score": 0.11101711983887212,
+          "details": {
+            "similarity_score": 0.051695199731453506,
+            "factual_content_score": 0.0,
+            "uncertainty_handling_score": 0.8
+          }
+        },
+        "relevance": {
+          "score": 0.8571428571428572,
+          "details": {
+            "keyword_overlap_score": 0.7142857142857143,
+            "question_type_score": 1.0,
+            "focus_score": 1.0
+          }
+        },
+        "clarity": {
+          "score": 0.5199999999999999,
+          "details": {
+            "readability_score": 0.7,
+            "structure_score": 0.5,
+            "complexity_score": 0.3
+          }
+        }
+      }
+    }
+  ]
+}

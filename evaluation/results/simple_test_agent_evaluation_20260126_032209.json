@@ -1,0 +1,52 @@
+{
+  "agent_name": "simple_test_agent",
+  "timestamp": "20260126_032209",
+  "total_tests": 1,
+  "successful_tests": 1,
+  "failed_tests": 0,
+  "average_score": 0.6405882352941177,
+  "results": [
+    {
+      "agent_name": "simple_test_agent",
+      "test_case_id": "simple_test",
+      "question": "What is AI?",
+      "agent_response": "This is a test response to: What is AI?",
+      "expected_response": "AI is artificial intelligence",
+      "accuracy_score": 0.5117647058823529,
+      "relevance_score": 0.92,
+      "clarity_score": 0.49,
+      "overall_score": 0.6405882352941177,
+      "execution_time_ms": 0.003,
+      "timestamp": "2026-01-26T03:22:09.169921",
+      "context": {},
+      "success": true,
+      "error_message": null,
+      "metric_results": {
+        "accuracy": {
+          "score": 0.5117647058823529,
+          "details": {
+            "similarity_score": 0.35294117647058826,
+            "factual_content_score": 0.8,
+            "uncertainty_handling_score": 0.6
+          }
+        },
+        "relevance": {
+          "score": 0.92,
+          "details": {
+            "keyword_overlap_score": 1.0,
+            "question_type_score": 1.0,
+            "focus_score": 0.6
+          }
+        },
+        "clarity": {
+          "score": 0.49,
+          "details": {
+            "readability_score": 0.7,
+            "structure_score": 0.0,
+            "complexity_score": 0.7
+          }
+        }
+      }
+    }
+  ]
+}

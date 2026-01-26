@@ -1,0 +1,106 @@
+{
+  "agent_name": "linkedin_agent",
+  "timestamp": "20260126_032456",
+  "total_tests": 2,
+  "successful_tests": 2,
+  "failed_tests": 0,
+  "average_score": 0.6998560667204735,
+  "results": [
+    {
+      "agent_name": "linkedin_agent",
+      "test_case_id": "linkedin_001",
+      "question": "Create a LinkedIn post about RAG systems in production",
+      "agent_response": "{'messages': [HumanMessage(content='Create a LinkedIn post about RAG systems in production', additional_kwargs={}, response_metadata={}, id='7b0466ec-8043-4417-914d-416d9dcaec73'), AIMessage(content='🚀 **Deploying Retrieval‑Augmented Generation (RAG) Systems at Scale**  \\n*(A practical guide for data scientists, ML engineers, and product leaders)*  \\n\\n---\\n\\n### 1️⃣ The Hook  \\n“Ever wonder why some generative AI models keep delivering *relevant* answers while others spit out generic nonsense? The secret sauce is often a well‑engineered RAG pipeline—retrieval + generation—running in production.”\\n\\n### 2️⃣ Why RAG Matters in Production  \\n\\n| ✅ Benefit | 🎯 Impact |\\n|------------|-----------|\\n| **Data freshness** | Pulls the latest documents, news articles, or internal knowledge bases. |\\n| **Explainability** | The retrieved context can be shown to end‑users as evidence of the answer. |\\n| **Cost control** | Only the relevant snippets are passed to a large language model (LLM), reducing token usage and inference cost. |\\n| **Regulatory compliance** | Easier audit trails: you know exactly which documents were consulted. |\\n\\n### 3️⃣ Key Architectural Pillars  \\n\\n1. **Vector Store & Indexing**  \\n   - Use vector databases (Pinecone, Weaviate, Milvus) that support approximate nearest neighbor search at scale.  \\n   - Keep embeddings up‑to‑date with incremental re‑indexing or streaming pipelines.\\n\\n2. **Retrieval Layer**  \\n   - Combine semantic similarity with keyword filtering to reduce noise.  \\n   - Implement relevance scoring and fallback strategies (e.g., use a second retrieval pass if confidence is low).\\n\\n3. **LLM Integration**  \\n   - Pass the top‑k retrieved passages as prompts using *prompt engineering* patterns (“You are an expert …” + context).  \\n   - Cache generated responses for identical queries to shave latency.\\n\\n4. **Observability & Monitoring**  \\n   - Track retrieval latency, recall@k, and LLM token usage.  \\n   - Log the exact documents retrieved for audit purposes.\\n\\n5. **Governance**  \\n   - Enforce data‑usage policies (GDPR, HIPAA) by filtering sensitive content before it reaches the model.  \\n   - Use fine‑tuning or prompt instructions to bias the model away from disallowed outputs.\\n\\n### 4️⃣ Practical Tips  \\n\\n| 📌 Tip | How |\\n|--------|-----|\\n| **Start small', additional_kwargs={'refusal': None}, response_metadata={'token_usage': {'completion_tokens': 509, 'prompt_tokens': 434, 'total_tokens': 943, 'completion_tokens_details': None, 'prompt_tokens_details': None}, 'model_provider': 'openai', 'model_name': 'openai/gpt-oss-20b', 'system_fingerprint': 'openai/gpt-oss-20b', 'id': 'chatcmpl-tqx5obz4vpa4av6scqga4', 'finish_reason': 'length', 'logprobs': None}, id='lc_run--019bf7e6-4c7d-70e0-a34d-1d80524c58a6-0', tool_calls=[], invalid_tool_calls=[], usage_metadata={'input_tokens': 434, 'output_tokens': 509, 'total_tokens': 943, 'input_token_details': {}, 'output_token_details': {}})]}",
+      "expected_response": null,
+      "accuracy_score": 0.6799999999999999,
+      "relevance_score": 0.6885714285714286,
+      "clarity_score": 0.73,
+      "overall_score": 0.6995238095238095,
+      "execution_time_ms": 29964.897,
+      "timestamp": "2026-01-26T03:24:13.825205",
+      "context": {
+        "expected_facts": [
+          "professional tone",
+          "engaging hook",
+          "technical content",
+          "call to action"
+        ]
+      },
+      "success": true,
+      "error_message": null,
+      "metric_results": {
+        "accuracy": {
+          "score": 0.6799999999999999,
+          "details": {
+            "factual_content_score": 0.0,
+            "uncertainty_handling_score": 0.8
+          }
+        },
+        "relevance": {
+          "score": 0.6885714285714286,
+          "details": {
+            "keyword_overlap_score": 0.8571428571428571,
+            "question_type_score": 0.8,
+            "focus_score": 0.1
+          }
+        },
+        "clarity": {
+          "score": 0.73,
+          "details": {
+            "readability_score": 1.0,
+            "structure_score": 0.5,
+            "complexity_score": 0.6
+          }
+        }
+      }
+    },
+    {
+      "agent_name": "linkedin_agent",
+      "test_case_id": "linkedin_002",
+      "question": "Write a post about the benefits of AI learning programs",
+      "agent_response": "{'messages': [HumanMessage(content='Write a post about the benefits of AI learning programs', additional_kwargs={}, response_metadata={}, id='42bea05b-00c9-4a1e-a03e-e49d5bfb8487'), AIMessage(content='', additional_kwargs={'refusal': None}, response_metadata={'token_usage': {'completion_tokens': 39, 'prompt_tokens': 433, 'total_tokens': 472, 'completion_tokens_details': None, 'prompt_tokens_details': None}, 'model_provider': 'openai', 'model_name': 'openai/gpt-oss-20b', 'system_fingerprint': 'openai/gpt-oss-20b', 'id': 'chatcmpl-ptvnuxmpkcswecni8bpcj', 'finish_reason': 'tool_calls', 'logprobs': None}, id='lc_run--019bf7e6-c186-7bf3-aade-bcd483d0c062-0', tool_calls=[{'name': 'ask_rag_agent', 'args': {'question': 'benefits of AI learning programs'}, 'id': '869636760', 'type': 'tool_call'}], invalid_tool_calls=[], usage_metadata={'input_tokens': 433, 'output_tokens': 39, 'total_tokens': 472, 'input_token_details': {}, 'output_token_details': {}}), ToolMessage(content=\"{'messages': [HumanMessage(content='benefits of AI learning programs', additional_kwargs={}, response_metadata={}, id='d5d9e080-c346-483f-8304-7f4f91c0de64'), AIMessage(content='', additional_kwargs={'refusal': None}, response_metadata={'token_usage': {'completion_tokens': 40, 'prompt_tokens': 481, 'total_tokens': 521, 'completion_tokens_details': None, 'prompt_tokens_details': None}, 'model_provider': 'openai', 'model_name': 'openai/gpt-oss-20b', 'system_fingerprint': 'openai/gpt-oss-20b', 'id': 'chatcmpl-txxv8kp4o9956l8kd5amd', 'finish_reason': 'tool_calls', 'logprobs': None}, id='lc_run--019bf7e6-cc52-72c1-a59b-6803401cf091-0', tool_calls=[{'name': 'search_knowledge_base', 'args': {'query': 'benefits of AI learning programs', 'top_k': 5}, 'id': '400781390', 'type': 'tool_call'}], invalid_tool_calls=[], usage_metadata={'input_tokens': 481, 'output_tokens': 40, 'total_tokens': 521, 'input_token_details': {}, 'output_token_details': {}}), ToolMessage(content='Error: RAG components not initialized. Please initialize first.', name='search_knowledge_base', id='b1fc12c8-d793-49ef-b1e4-9e1684bfc08f', tool_call_id='400781390'), AIMessage(content='I don’t have enough information in the provided documents to answer that.', additional_kwargs={'refusal': None}, response_metadata={'token_usage': {'completion_tokens': 42, 'prompt_tokens': 537, 'total_tokens': 579, 'completion_tokens_details': None, 'prompt_tokens_details': None}, 'model_provider': 'openai', 'model_name': 'openai/gpt-oss-20b', 'system_fingerprint': 'openai/gpt-oss-20b', 'id': 'chatcmpl-d9bss5elpvgrpdgng6hhj', 'finish_reason': 'stop', 'logprobs': None}, id='lc_run--019bf7e6-d7ba-7cb1-8a48-161c4af53cd4-0', tool_calls=[], invalid_tool_calls=[], usage_metadata={'input_tokens': 537, 'output_tokens': 42, 'total_tokens': 579, 'input_token_details': {}, 'output_token_details': {}})]}\", name='ask_rag_agent', id='6f15ac7e-de6e-40f6-9922-9c69af7ff1b9', tool_call_id='869636760'), AIMessage(content='🚀 **Why Every Professional Should Invest in an AI Learning Program**\\n\\nIn the age of rapid digital transformation, artificial intelligence isn’t a luxury—it’s a necessity. Whether you’re a developer, product manager, marketer, or C‑suite executive, understanding AI can unlock new levels of efficiency and innovation. Here are the top benefits that make an AI learning program worth your time (and budget):\\n\\n| Benefit | What It Means for You |\\n|---------|-----------------------|\\n| **Future‑Proof Skillset** | AI is reshaping every industry. Mastering its fundamentals protects you from skill obsolescence and positions you as a forward‑thinking leader. |\\n| **Data‑Driven Decision Making** | Learn how to build models, interpret results, and turn raw data into actionable insights—turning intuition into measurable impact. |\\n| **Accelerated Product Development** | AI can automate repetitive tasks, generate prototypes, and predict user behavior, slashing time‑to‑market by 30–50%. |\\n| **Competitive Advantage** | Teams that embed AI in workflows outperform peers in productivity, cost savings, and customer satisfaction. |\\n| **Cross‑Functional Collaboration** | A shared AI language bridges tech, business, and design teams—leading to clearer communication and better outcomes. |\\n| **Ethical & Responsible AI** | Training includes governance, bias mitigation, and transparency practices that safeguard your brand’s reputation. |\\n\\n### How a Structured Program Helps\\n\\n1. **Hands‑on Projects** – Apply theory in real scenarios (e.g., building a recommendation engine or automating report generation).  \\n2. **Mentorship & Peer Learning** – Learn from industry experts and collaborate with peers who bring diverse perspectives.  \\n3. **Continuous Updates** – AI evolves fast; curated curricula keep you current with the latest tools, frameworks, and best practices.  \\n\\n### Quick Takeaway\\n\\n> *“Invest in an AI learning program today, and you’ll not only stay relevant tomorrow—you’ll shape the future.”*\\n\\n---\\n\\n💡 **Next Steps**\\n\\n- Evaluate your team’s skill gaps—what AI capabilities do you need most?  \\n- Look for programs that combine theory with real‑world projects.  \\n- Start small: a 4‑week workshop can spark', additional_kwargs={'refusal': None}, response_metadata={'token_usage': {'completion_tokens': 510, 'prompt_tokens': 1045, 'total_tokens': 1555, 'completion_tokens_details': None, 'prompt_tokens_details': None}, 'model_provider': 'openai', 'model_name': 'openai/gpt-oss-20b', 'system_fingerprint': 'openai/gpt-oss-20b', 'id': 'chatcmpl-pdyn79tv0yzf3i5jnwid', 'finish_reason': 'length', 'logprobs': None}, id='lc_run--019bf7e6-e558-7bf0-9cf6-ec9c725b0b62-0', tool_calls=[], invalid_tool_calls=[], usage_metadata={'input_tokens': 1045, 'output_tokens': 510, 'total_tokens': 1555, 'input_token_details': {}, 'output_token_details': {}})]}",
+      "expected_response": null,
+      "accuracy_score": 0.6799999999999999,
+      "relevance_score": 0.6905649717514125,
+      "clarity_score": 0.73,
+      "overall_score": 0.7001883239171375,
+      "execution_time_ms": 42658.664000000004,
+      "timestamp": "2026-01-26T03:24:56.484753",
+      "context": {
+        "expected_facts": [
+          "learning benefits",
+          "skill development",
+          "career growth",
+          "practical application"
+        ]
+      },
+      "success": true,
+      "error_message": null,
+      "metric_results": {
+        "accuracy": {
+          "score": 0.6799999999999999,
+          "details": {
+            "factual_content_score": 0.0,
+            "uncertainty_handling_score": 0.8
+          }
+        },
+        "relevance": {
+          "score": 0.6905649717514125,
+          "details": {
+            "keyword_overlap_score": 0.8333333333333334,
+            "question_type_score": 0.8,
+            "focus_score": 0.1694915254237288
+          }
+        },
+        "clarity": {
+          "score": 0.73,
+          "details": {
+            "readability_score": 1.0,
+            "structure_score": 0.5,
+            "complexity_score": 0.6
+          }
+        }
+      }
+    }
+  ]
+}
