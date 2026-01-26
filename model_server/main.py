@@ -67,11 +67,21 @@ async def chat_completions(req: ChatCompletionRequest):
             if messages:
                 last_message = messages[-1]
                 if hasattr(last_message, 'content'):
-                    text = last_message.content
+                    # Ensure content is properly extracted as string
+                    if isinstance(last_message.content, str):
+                        text = last_message.content
+                    elif isinstance(last_message.content, dict):
+                        # Handle case where content might be a dict with text field
+                        text = last_message.content.get('text', str(last_message.content))
+                    else:
+                        text = str(last_message.content)
                 else:
                     text = str(last_message)
             else:
                 text = "No response generated."
+        elif hasattr(result, 'content'):
+            # Handle case where result itself has content
+            text = result.content if isinstance(result.content, str) else str(result.content)
         else:
             text = str(result)
 
@@ -123,11 +133,21 @@ async def completions(req: CompletionRequest):
             if messages:
                 last_message = messages[-1]
                 if hasattr(last_message, 'content'):
-                    text = last_message.content
+                    # Ensure content is properly extracted as string
+                    if isinstance(last_message.content, str):
+                        text = last_message.content
+                    elif isinstance(last_message.content, dict):
+                        # Handle case where content might be a dict with text field
+                        text = last_message.content.get('text', str(last_message.content))
+                    else:
+                        text = str(last_message.content)
                 else:
                     text = str(last_message)
             else:
                 text = "No response generated."
+        elif hasattr(result, 'content'):
+            # Handle case where result itself has content
+            text = result.content if isinstance(result.content, str) else str(result.content)
         else:
             text = str(result)
 

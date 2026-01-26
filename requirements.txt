@@ -1,17 +1,20 @@
-langchain-core
-langchain-openai
 # Core dependencies
-pypdf>=5.1.0
-langchain>=0.3.0
-langchain-community>=0.3.0
-langchain-text-splitters>=0.3.0
+pypdf>=6.6.0
+langchain>=0.4.0
+langchain-core>=0.4.0
+langchain-community>=0.4.0
+langchain-openai>=0.4.0
+langchain-text-splitters>=0.4.0
 langchain-google-genai>=2.0.0
+langchain_huggingface>=1.2.0
+# Ensure Pydantic v2 compatibility
+pydantic>=2.12.0
 qdrant-client>=1.7.0
 sentence-transformers>=2.2.0
 
 # Text generation
 transformers>=4.30.0
-torch>=2.0.0
+torch>=2.9.1
 accelerate>=0.20.0
 
 # Google Gemini
