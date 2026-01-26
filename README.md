@@ -1,0 +1,234 @@
+# AI Learning Project
+
+A comprehensive AI learning platform featuring multiple specialized agents for code analysis, retrieval-augmented generation (RAG), and LinkedIn content creation. This project demonstrates practical applications of AI in software development, document processing, and content generation.
+
+## 🚀 Features
+
+### Specialized AI Agents
+- **Code Analysis Agent** - Analyzes codebases, explains architecture, and answers technical questions
+- **RAG Agent** - Retrieval-augmented generation for question answering from learning materials
+- **LinkedIn Post Generator** - Creates professional LinkedIn content from various topics
+
+### Data Processing Pipeline
+- PDF text extraction and processing
+- Video to audio extraction and transcription
+- Intelligent document chunking and indexing
+- Vector embeddings for semantic search
+
+### Evaluation Framework
+- Comprehensive agent performance metrics (Accuracy, Relevance, Clarity)
+- Automated benchmarking and testing
+- Detailed evaluation reports and analytics
+
+## 🏗️ Architecture
+
+```
+ai-learning/
+├── agents/                     # Specialized AI agents
+│   ├── code_analysis/         # Code repository analysis
+│   ├── learning_program_rag/  # RAG-based Q&A
+│   └── linkedin_post_generation/ # Content creation
+├── data/                      # Learning materials and outputs
+├── data_extraction/           # PDF and video processing
+├── evaluation/                # Agent evaluation framework
+├── models/                    # LLM integrations (Gemini, LLM Studio)
+├── util/                      # Utilities (embeddings, vector stores)
+└── model_server/              # FastAPI model serving
+```
+
+## 🛠️ Technology Stack
+
+- **Language Models**: Google Gemini, Local LLM via LLM Studio
+- **Vector Database**: Qdrant for semantic search
+- **Embeddings**: Sentence Transformers, HuggingFace
+- **Framework**: LangChain for agent orchestration
+- **Web Interface**: OpenWebUI integration
+- **API**: FastAPI for model serving
+- **Media Processing**: Whisper for audio transcription
+
+## 📋 Prerequisites
+
+- Python 3.8+
+- Docker and Docker Compose
+- Google API key for Gemini (optional)
+
+## 🚀 Quick Start
+
+### 1. Clone and Setup
+```bash
+git clone <repository-url>
+cd ai-learning
+pip install -r requirements.txt
+```
+
+### 2. Environment Configuration
+Create a `.env` file with your configuration:
+```env
+# Google Gemini (optional)
+GOOGLE_API_KEY=your_api_key_here
+GEMINI_MODEL=gemini-2.5-flash
+
+# Backend selection
+EMBEDDING_BACKEND=huggingface
+VECTOR_STORE_BACKEND=qdrant
+GENERATOR_BACKEND=gemini
+```
+
+### 3. Start Services
+```bash
+# Start Qdrant vector database and OpenWebUI
+docker-compose up -d
+
+# Start the model server (optional)
+python model_server/run_model_server.py
+```
+
+### 4. Process Learning Materials
+```bash
+# Extract text from PDFs
+python data_extraction/extract_pdf.py
+
+# Extract and transcribe videos
+python data_extraction/extract_video.py
+```
+
+## 💻 Usage Examples
+
+### Code Analysis Agent
+```python
+from agents.code_analysis.agent import get_agent
+
+agent = get_agent()
+response = agent.invoke({
+    "messages": [{
+        "role": "user", 
+        "content": "Explain the architecture of this project"
+    }]
+})
+```
+
+### RAG Agent
+```python
+from agents.learning_program_rag.agent import get_agent
+
+agent = get_agent()
+response = agent.invoke({
+    "messages": [{
+        "role": "user",
+        "content": "What are the key concepts of RAG?"
+    }]
+})
+```
+
+### LinkedIn Post Generation
+```python
+from linkedin_post_generation.agent import get_agent
+
+agent = get_agent()
+response = agent.invoke({
+    "messages": [{
+        "role": "user",
+        "content": "Create a post about implementing RAG systems"
+    }]
+})
+```
+
+## 🔧 Configuration
+
+### Model Backends
+- **Gemini**: Google's latest language model
+- **LLM Studio**: Local model deployment via LLM Studio
+- **Custom**: Extend with your own model implementations
+
+### Vector Store Options
+- **Qdrant**: Primary vector database (recommended)
+- **In-memory**: For testing and development
+
+### Embedding Models
+- **sentence-transformers/all-MiniLM-L6-v2**: Default lightweight model
+- **Custom models**: Configure via `EMBEDDING_MODEL` environment variable
+
+## 📊 Evaluation
+
+Run comprehensive agent evaluations:
+
+```bash
+# Evaluate all agents
+python evaluation/evaluate_agents.py
+
+# Quick evaluation
+python evaluation/quick_eval.py
+
+# View results
+ls evaluation/results/
+```
+
+### Evaluation Metrics
+- **Accuracy** (0.0-1.0): Factual correctness and reliability
+- **Relevance** (0.0-1.0): How well responses address questions
+- **Clarity** (0.0-1.0): Response structure and readability
+
+## 🧪 Testing
+
+```bash
+# Run basic tests
+python -m pytest tests/
+
+# Test specific agents
+python tests/test_agent_langchain.py
+```
+
+## 📂 Data Management
+
+### Supported Formats
+- **PDFs**: Automatic text extraction and chunking
+- **Videos**: Audio extraction and Whisper transcription
+- **Text files**: Direct processing and indexing
+
+### Processing Pipeline
+1. Extract content from source materials
+2. Chunk text with overlap for context preservation
+3. Generate embeddings using sentence transformers
+4. Index in Qdrant vector database
+5. Enable semantic search and retrieval
+
+## 🌐 Web Interface
+
+Access the web interface via OpenWebUI:
+- URL: `http://localhost:3000`
+- Features: Chat interface, agent selection, document upload
+- Integration: Direct connection to your local agents
+
+## 🔍 Monitoring
+
+### Vector Database
+- Qdrant Web UI: `http://localhost:6333/dashboard`
+- Collection monitoring and search testing
+
+### Model Server
+- FastAPI docs: `http://localhost:8000/docs`
+- Health checks and API documentation
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature-name`
+3. Make your changes and add tests
+4. Run evaluations: `python evaluation/evaluate_agents.py`
+5. Submit a pull request
+
+## 📄 License
+
+This project is part of Ciklum's AI learning program and is intended for educational purposes.
+
+## 🆘 Troubleshooting
+
+### Common Issues
+1. **Qdrant connection errors**: Ensure Docker is running and port 6333 is available
+2. **Memory issues**: Reduce chunk size or use smaller embedding models
+3. **API rate limits**: Configure appropriate delays for external API calls
+
+### Getting Help
+- Check the evaluation results for agent performance insights
+- Review logs in `tests/test_results.log`
+- Ensure all dependencies are installed correctly
