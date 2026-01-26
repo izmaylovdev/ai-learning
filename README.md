@@ -20,20 +20,57 @@ A comprehensive AI learning platform featuring multiple specialized agents for c
 - Automated benchmarking and testing
 - Detailed evaluation reports and analytics
 
-## 🏗️ Architecture
+## 🏗️ File Structure Map
 
 ```
 ai-learning/
-├── agents/                     # Specialized AI agents
-│   ├── code_analysis/         # Code repository analysis
-│   ├── learning_program_rag/  # RAG-based Q&A
-│   └── linkedin_post_generation/ # Content creation
-├── data/                      # Learning materials and outputs
-├── data_extraction/           # PDF and video processing
-├── evaluation/                # Agent evaluation framework
-├── models/                    # LLM integrations (Gemini, LLM Studio)
-├── util/                      # Utilities (embeddings, vector stores)
-└── model_server/              # FastAPI model serving
+├── agents/                         # Specialized AI agents
+│   ├── code_analysis/             # Code repository analysis agent
+│   │   ├── agent.py               # Main agent implementation
+│   │   ├── cli.py                 # Command line interface
+│   │   ├── indexer.py             # Code indexing functionality
+│   │   └── tools.py               # Agent tools and utilities
+│   ├── learning_program_rag/      # RAG-based Q&A agent
+│   │   ├── agent.py               # Main RAG agent
+│   │   ├── tools.py               # RAG tools and utilities
+│   │   ├── data_extraction/       # Data processing pipeline
+│   │   │   ├── extract_pdf.py     # PDF text extraction
+│   │   │   └── extract_video.py   # Video transcription
+│   │   └── tests/                 # Agent testing suite
+│   │       ├── test_agent_langchain.py
+│   │       ├── test_agentignore.py
+│   │       └── test_questions.py
+│   └── linkedin_post_generation/  # LinkedIn content creation
+├── data/                          # Learning materials and outputs
+│   ├── *.mp4                     # Video learning materials
+│   ├── *.pdf                     # PDF documents
+│   └── output/                   # Processed outputs
+│       ├── audio/                # Extracted audio files
+│       └── transcripts/          # Generated transcripts
+├── evaluation/                    # Comprehensive evaluation framework
+│   ├── benchmarks.py             # Performance benchmarks
+│   ├── config.py                 # Evaluation configuration
+│   ├── demo.py                   # Evaluation demonstrations
+│   ├── evaluate_agents.py        # Main evaluation runner
+│   ├── evaluator.py              # Core evaluation logic
+│   ├── metrics.py                # Evaluation metrics
+│   ├── quick_eval.py             # Quick evaluation script
+│   └── results/                  # Evaluation results storage
+├── models/                        # LLM integrations
+│   ├── gemini_model.py           # Google Gemini integration
+│   └── llm_studio_model.py       # LLM Studio integration
+├── model_server/                  # FastAPI model serving
+│   ├── main.py                   # FastAPI application
+│   ├── run_model_server.py       # Server runner
+│   └── schemas.py                # API schemas
+├── util/                         # Core utilities
+│   ├── embeddings.py             # Embedding utilities
+│   ├── interfaces.py             # Common interfaces
+│   └── vector_stores.py          # Vector storage implementations
+├── config.py                     # Global configuration
+├── docker-compose.yml            # Docker services configuration
+├── requirements.txt              # Python dependencies
+└── README.md                     # Project documentation
 ```
 
 ## 🛠️ Technology Stack
@@ -86,10 +123,10 @@ python model_server/run_model_server.py
 ### 4. Process Learning Materials
 ```bash
 # Extract text from PDFs
-python data_extraction/extract_pdf.py
+python agents/learning_program_rag/data_extraction/extract_pdf.py
 
 # Extract and transcribe videos
-python data_extraction/extract_video.py
+python agents/learning_program_rag/data_extraction/extract_video.py
 ```
 
 ## 💻 Usage Examples
@@ -172,10 +209,10 @@ ls evaluation/results/
 
 ```bash
 # Run basic tests
-python -m pytest tests/
+python -m pytest agents/learning_program_rag/tests/
 
 # Test specific agents
-python tests/test_agent_langchain.py
+python agents/learning_program_rag/tests/test_agent_langchain.py
 ```
 
 ## 📂 Data Management
@@ -230,5 +267,5 @@ This project is part of Ciklum's AI learning program and is intended for educati
 
 ### Getting Help
 - Check the evaluation results for agent performance insights
-- Review logs in `tests/test_results.log`
+- Review logs in `agents/learning_program_rag/tests/test_results.log`
 - Ensure all dependencies are installed correctly
