@@ -1,7 +1,8 @@
-"""Extract and process PDF files for AI learning."""
+"""Extract and process HTML files for AI learning."""
 
 import sys
 from pathlib import Path
+from typing import Optional
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -9,7 +10,7 @@ warnings.filterwarnings('ignore')
 project_root = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(project_root))
 
-from pypdf import PdfReader
+from bs4 import BeautifulSoup
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams, PointStruct
@@ -19,12 +20,12 @@ import config
 from util.embeddings import get_embedding_model
 
 
-class PDFProcessor:
-    """Process PDF files: extract text and store in vector DB."""
+class HTMLProcessor:
+    """Process HTML files: extract text and store in vector DB."""
 
     def __init__(self):
-        """Initialize PDF processor."""
-        print("Initializing PDF Processor...")
+        """Initialize HTML processor."""
+        print("Initializing HTML Processor...")
 
         # Initialize text splitter
         self.text_splitter = RecursiveCharacterTextSplitter(
@@ -66,29 +67,51 @@ class PDFProcessor:
         except Exception as e:
             print(f"Error with Qdrant collection: {e}")
             print("Make sure Qdrant is running (docker-compose up -d)")
-            import sys
             sys.exit(1)
 
-    def extract_text_from_pdf(self, pdf_path: str) -> str:
-        """Extract text from PDF file."""
+    def extract_text_from_html(self, html_path: str) -> tuple[str, Optional[str]]:
+        """Extract text from HTML file.
+
+        Returns:
+            tuple: (extracted_text, title) - title may be None if not found
+        """
         try:
-            print(f"Extracting text from: {pdf_path}")
-            reader = PdfReader(pdf_path)
+            print(f"Extracting text from: {html_path}")
 
-            text = []
-            for page_num, page in enumerate(reader.pages, 1):
-                page_text = page.extract_text()
-                if page_text:
-                    text.append(page_text)
+            with open(html_path, 'r', encoding='utf-8') as f:
+                html_content = f.read()
 
-            full_text = "\n".join(text)
-            print(f"Extracted {len(reader.pages)} pages, {len(full_text)} characters")
-            return full_text
+            soup = BeautifulSoup(html_content, 'html.parser')
+
+            # Extract title
+            title = None
+            title_tag = soup.find('title')
+            if title_tag:
+                title = title_tag.get_text(strip=True)
+
+            # Remove script and style elements
+            for element in soup(['script', 'style', 'nav', 'footer', 'header', 'aside']):
+                element.decompose()
+
+            # Extract text from body, or full document if no body
+            body = soup.find('body')
+            if body:
+                text = body.get_text(separator='\n', strip=True)
+            else:
+                text = soup.get_text(separator='\n', strip=True)
+
+            # Clean up whitespace
+            lines = [line.strip() for line in text.splitlines() if line.strip()]
+            clean_text = '\n'.join(lines)
+
+            print(f"Extracted {len(clean_text)} characters" + (f", title: '{title}'" if title else ""))
+            return clean_text, title
+
         except Exception as e:
-            print(f"Error extracting text from PDF: {e}")
-            return ""
+            print(f"Error extracting text from HTML: {e}")
+            return "", None
 
-    def process_and_store(self, pdf_name: str, text: str):
+    def process_and_store(self, html_name: str, text: str, title: Optional[str] = None):
         """Process text and store in Qdrant."""
         try:
             # Split text into chunks
@@ -101,16 +124,20 @@ class PDFProcessor:
                 # Generate embedding
                 embedding = self.embeddings.embed_query(chunk)
 
-                # Create point
+                # Create point with metadata
+                payload = {
+                    "source": html_name,
+                    "type": "html_document",
+                    "chunk_index": idx,
+                    "text": chunk
+                }
+                if title:
+                    payload["title"] = title
+
                 point = PointStruct(
                     id=str(uuid.uuid4()),
                     vector=embedding,
-                    payload={
-                        "source": pdf_name,
-                        "type": "pdf_document",
-                        "chunk_index": idx,
-                        "text": chunk
-                    }
+                    payload=payload
                 )
                 points.append(point)
 
@@ -124,54 +151,58 @@ class PDFProcessor:
         except Exception as e:
             print(f"Error processing and storing text: {e}")
 
-    def process_pdf(self, pdf_path: str):
+    def process_html(self, html_path: str):
         """Complete pipeline: extract text and store."""
-        pdf_path = Path(pdf_path)
-        if not pdf_path.exists():
-            print(f"Error: PDF file not found: {pdf_path}")
+        html_path = Path(html_path)
+        if not html_path.exists():
+            print(f"Error: HTML file not found: {html_path}")
             return
 
         print(f"\n{'='*60}")
-        print(f"Processing PDF: {pdf_path.name}")
+        print(f"Processing HTML: {html_path.name}")
         print(f"{'='*60}")
 
         # Step 1: Extract text
-        text = self.extract_text_from_pdf(str(pdf_path))
+        text, title = self.extract_text_from_html(str(html_path))
         if not text:
-            print("Failed to extract text. Skipping PDF.")
+            print("Failed to extract text. Skipping HTML.")
             return
 
         # Step 2: Process and store in vector DB
-        self.process_and_store(pdf_path.name, text)
+        self.process_and_store(html_path.name, text, title)
 
-        print(f"\n✓ Successfully processed: {pdf_path.name}\n")
+        print(f"\n✓ Successfully processed: {html_path.name}\n")
 
 
 def main():
-    """Main function to process all PDFs in data directory."""
-    # Get all PDF files
+    """Main function to process all HTML files in data directory."""
+    # Get all HTML files
     data_path = Path(config.DATA_DIR)
-    pdf_files = [f for f in data_path.iterdir() if f.suffix.lower() == '.pdf']
+    html_extensions = ['.html', '.htm']
+    html_files = [
+        f for f in data_path.iterdir()
+        if f.is_file() and f.suffix.lower() in html_extensions
+    ]
 
-    if not pdf_files:
-        print(f"No PDF files found in {config.DATA_DIR}")
+    if not html_files:
+        print(f"No HTML files found in {config.DATA_DIR}")
         return
 
-    print(f"Found {len(pdf_files)} PDF file(s) to process")
+    print(f"Found {len(html_files)} HTML file(s) to process")
 
     # Initialize processor
-    processor = PDFProcessor()
+    processor = HTMLProcessor()
 
-    # Process each PDF
-    for pdf_file in pdf_files:
+    # Process each HTML file
+    for html_file in html_files:
         try:
-            processor.process_pdf(str(pdf_file))
+            processor.process_html(str(html_file))
         except Exception as e:
-            print(f"Error processing {pdf_file.name}: {e}")
+            print(f"Error processing {html_file.name}: {e}")
             continue
 
     print("\n" + "="*60)
-    print("All PDFs processed!")
+    print("All HTML files processed!")
     print("="*60)
 
 

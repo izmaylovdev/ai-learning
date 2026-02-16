@@ -5,8 +5,30 @@ from typing import List, Dict
 import warnings
 warnings.filterwarnings('ignore')
 
+# Add project root to Python path
+PROJECT_ROOT = Path(__file__).parent.parent.parent.parent
+sys.path.insert(0, str(PROJECT_ROOT))
+
+# Set up ffmpeg path for Windows
+try:
+    import imageio_ffmpeg as iio
+    ffmpeg_exe = iio.get_ffmpeg_exe()
+    ffmpeg_path = os.path.dirname(ffmpeg_exe)
+
+    # Add ffmpeg to PATH
+    if ffmpeg_path not in os.environ.get('PATH', ''):
+        os.environ['PATH'] = os.environ.get('PATH', '') + os.pathsep + ffmpeg_path
+        print(f"Added ffmpeg to PATH: {ffmpeg_path}")
+
+    # Set IMAGEIO_FFMPEG_EXE environment variable for MoviePy
+    os.environ['IMAGEIO_FFMPEG_EXE'] = ffmpeg_exe
+    print(f"Set IMAGEIO_FFMPEG_EXE to: {ffmpeg_exe}")
+
+except ImportError:
+    print("Warning: imageio-ffmpeg not found, ffmpeg may not work")
+
 from moviepy import VideoFileClip
-from faster_whisper import WhisperModel
+import whisper
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams, PointStruct
@@ -25,11 +47,7 @@ class VideoProcessor:
 
         # Initialize Whisper model
         print(f"Loading Whisper model: {config.WHISPER_MODEL}")
-        self.whisper_model = WhisperModel(
-            config.WHISPER_MODEL,
-            device=config.WHISPER_DEVICE,
-            compute_type=config.WHISPER_COMPUTE_TYPE
-        )
+        self.whisper_model = whisper.load_model(config.WHISPER_MODEL)
 
         # Initialize text splitter
         self.text_splitter = RecursiveCharacterTextSplitter(
@@ -101,24 +119,88 @@ class VideoProcessor:
         """Transcribe audio file using Whisper."""
         try:
             print(f"Transcribing audio: {audio_path}")
-            segments, info = self.whisper_model.transcribe(
+
+            # Ensure ffmpeg is available for Whisper on Windows
+            # This must be done before whisper.transcribe() spawns ffmpeg subprocess
+            try:
+                import imageio_ffmpeg as iio
+                import shutil
+
+                ffmpeg_exe = iio.get_ffmpeg_exe()
+                ffmpeg_dir = os.path.dirname(ffmpeg_exe)
+
+                # Prepend to PATH to ensure ffmpeg is found first
+                current_path = os.environ.get('PATH', '')
+                if ffmpeg_dir not in current_path:
+                    os.environ['PATH'] = ffmpeg_dir + os.pathsep + current_path
+                    print(f"Added ffmpeg to PATH: {ffmpeg_dir}")
+
+                # On Windows, also create a symlink/copy named 'ffmpeg.exe' if needed
+                # because imageio-ffmpeg has a versioned filename
+                ffmpeg_standard = os.path.join(ffmpeg_dir, 'ffmpeg.exe')
+                if not os.path.exists(ffmpeg_standard) and os.path.exists(ffmpeg_exe):
+                    try:
+                        import shutil
+                        shutil.copy2(ffmpeg_exe, ffmpeg_standard)
+                        print(f"Created ffmpeg.exe copy at: {ffmpeg_standard}")
+                    except Exception as copy_err:
+                        print(f"Warning: Could not create ffmpeg.exe copy: {copy_err}")
+
+                # Verify ffmpeg is now accessible
+                which_ffmpeg = shutil.which('ffmpeg')
+                if which_ffmpeg:
+                    print(f"ffmpeg found via PATH: {which_ffmpeg}")
+                else:
+                    print(f"Warning: ffmpeg not found in PATH, using direct path")
+                    # Monkey-patch whisper to use full path
+                    import whisper.audio
+                    original_load_audio = whisper.audio.load_audio
+                    def patched_load_audio(file, sr=16000):
+                        import subprocess
+                        cmd = [
+                            ffmpeg_exe,
+                            "-nostdin",
+                            "-threads", "0",
+                            "-i", file,
+                            "-f", "s16le",
+                            "-ac", "1",
+                            "-acodec", "pcm_s16le",
+                            "-ar", str(sr),
+                            "-"
+                        ]
+                        import numpy as np
+                        out = subprocess.run(cmd, capture_output=True, check=True).stdout
+                        return np.frombuffer(out, np.int16).flatten().astype(np.float32) / 32768.0
+                    whisper.audio.load_audio = patched_load_audio
+                    print(f"Patched whisper.audio.load_audio to use: {ffmpeg_exe}")
+
+            except ImportError:
+                print("Warning: imageio-ffmpeg not installed, whisper may fail")
+
+            # Verify audio file exists
+            if not os.path.exists(audio_path):
+                print(f"Error: Audio file not found: {audio_path}")
+                return []
+
+            result = self.whisper_model.transcribe(
                 audio_path,
-                beam_size=5,
-                language="en"
+                language="en",
+                fp16=False  # Disable fp16 for CPU compatibility
             )
 
-            print(f"Detected language: {info.language} (probability: {info.language_probability:.2f})")
+            detected_lang = result.get("language", "unknown")
+            print(f"Detected language: {detected_lang}")
 
             transcription_segments = []
             full_text = []
 
-            for segment in segments:
+            for segment in result.get("segments", []):
                 transcription_segments.append({
-                    'start': segment.start,
-                    'end': segment.end,
-                    'text': segment.text.strip()
+                    'start': segment['start'],
+                    'end': segment['end'],
+                    'text': segment['text'].strip()
                 })
-                full_text.append(segment.text.strip())
+                full_text.append(segment['text'].strip())
 
             print(f"Transcription complete: {len(transcription_segments)} segments")
             return transcription_segments

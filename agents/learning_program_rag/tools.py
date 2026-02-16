@@ -1,11 +1,15 @@
 """LangChain tools for RAG operations."""
 from __future__ import annotations
+import logging
 from typing import Optional
 from langchain.tools import tool
 
 import config
 from util.embeddings import get_embedding_model
 from util.vector_stores import get_vector_store
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 # Global RAG components
 _embeddings = None
@@ -64,6 +68,7 @@ def search_knowledge_base(query: str, top_k: int = 3) -> str:
             source = chunk['source']
             text = chunk['text']
             score = chunk['score']
+            logger.info(f"Retrieved from '{source}' (relevance: {score:.2f}):\n{text}")
             context_parts.append(
                 f"[Source {i}: {source} (relevance: {score:.2f})]\n{text}\n"
             )
@@ -110,6 +115,7 @@ def search_by_source(query: str, source_filter: str, top_k: int = 3) -> str:
             source = chunk['source']
             text = chunk['text']
             score = chunk['score']
+            logger.info(f"Retrieved from '{source}' (relevance: {score:.2f}):\n{text}")
             context_parts.append(
                 f"[Source {i}: {source} (relevance: {score:.2f})]\n{text}\n"
             )

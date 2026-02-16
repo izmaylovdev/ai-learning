@@ -1,10 +1,14 @@
 """RAG Agent for answering questions using Retrieval-Augmented Generation."""
 
+import logging
 from langchain.agents import create_agent
 from langchain_core.messages import SystemMessage, HumanMessage
 
 from models import default_model as model
 from .tools import get_all_tools
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 from langchain_core.tools import tool
 from typing import Annotated
@@ -33,7 +37,6 @@ Response style:
 
 # Cache the agent instance
 _agent_instance = None
-
 
 def get_agent():
     """Get or create the RAG agent."""
@@ -65,8 +68,20 @@ def ask_rag_agent(
     agent = get_agent()
     response = agent.invoke({"messages": [HumanMessage(question.strip())]})
 
-    # LangChain agents may return different shapes
+    # Extract the final message content from the response
     if isinstance(response, dict):
-        return response.get("output", str(response))
+        messages = response.get("messages", [])
+        if messages:
+            # Get the last AI message content
+            last_message = messages[-1]
+            if hasattr(last_message, 'content'):
+                result = last_message.content
+            else:
+                result = str(last_message)
+        else:
+            result = response.get("output", str(response))
+        logger.info(f"RAG Agent result: {result}")
+        return result
 
+    logger.info(f"RAG Agent result: {response}")
     return str(response)
