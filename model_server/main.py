@@ -4,7 +4,8 @@ import os
 import time
 import uuid
 
-from linkedin_post_generation.agent import agent
+from linkedin_post_generation.agent import agent as linkedin_agent
+from agents.learning_program_rag.agent import get_agent as get_rag_agent
 from model_server.schemas import CompletionRequest, ChatCompletionRequest
 import config
 
@@ -20,6 +21,10 @@ app.add_middleware(
 
 GENERATOR_TYPE = os.getenv("GENERATOR_TYPE", config.GENERATOR_BACKEND)
 
+# Model IDs
+LINKEDIN_MODEL_ID = "linkedin-post-agent"
+RAG_MODEL_ID = "rag-agent"
+
 # Add logging for submodel selection
 import logging
 
@@ -27,10 +32,44 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("ModelServer")
 
+
+def get_agent_for_model(model_id: str):
+    """Get the appropriate agent based on model ID."""
+    if model_id and model_id.lower() == RAG_MODEL_ID:
+        return get_rag_agent(), "RAG"
+    else:
+        # Default to LinkedIn agent
+        return linkedin_agent, "LinkedIn"
+
+
+def extract_response_text(result):
+    """Extract text from agent response."""
+    if isinstance(result, dict) and "messages" in result:
+        messages = result["messages"]
+        if messages:
+            last_message = messages[-1]
+            if hasattr(last_message, 'content'):
+                if isinstance(last_message.content, str):
+                    return last_message.content
+                elif isinstance(last_message.content, dict):
+                    return last_message.content.get('text', str(last_message.content))
+                else:
+                    return str(last_message.content)
+            else:
+                return str(last_message)
+        else:
+            return "No response generated."
+    elif hasattr(result, 'content'):
+        return result.content if isinstance(result.content, str) else str(result.content)
+    else:
+        return str(result)
+
+
 # Update the chat_completions endpoint to include logging
 @app.post("/v1/chat/completions")
 async def chat_completions(req: ChatCompletionRequest):
-    logger.info("Answering chat completion request using LinkedIn agent")
+    agent, agent_name = get_agent_for_model(req.model)
+    logger.info(f"Answering chat completion request using {agent_name} agent")
 
     # Extract the content from messages
     if req.messages:
@@ -54,48 +93,22 @@ async def chat_completions(req: ChatCompletionRequest):
     else:
         content = ""
 
-    # Always use LinkedIn agent
     try:
         # Use the agent to generate a response
         from langchain_core.messages import HumanMessage
         result = agent.invoke({"messages": [HumanMessage(content=content)]})
-
-        # Extract the text from the result
-        if isinstance(result, dict) and "messages" in result:
-            # Get the last message from the agent
-            messages = result["messages"]
-            if messages:
-                last_message = messages[-1]
-                if hasattr(last_message, 'content'):
-                    # Ensure content is properly extracted as string
-                    if isinstance(last_message.content, str):
-                        text = last_message.content
-                    elif isinstance(last_message.content, dict):
-                        # Handle case where content might be a dict with text field
-                        text = last_message.content.get('text', str(last_message.content))
-                    else:
-                        text = str(last_message.content)
-                else:
-                    text = str(last_message)
-            else:
-                text = "No response generated."
-        elif hasattr(result, 'content'):
-            # Handle case where result itself has content
-            text = result.content if isinstance(result.content, str) else str(result.content)
-        else:
-            text = str(result)
-
-        logger.info(f"Generated response using LinkedIn agent")
+        text = extract_response_text(result)
+        logger.info(f"Generated response using {agent_name} agent")
 
     except Exception as e:
-        logger.error(f"Error using LinkedIn agent: {e}")
+        logger.error(f"Error using {agent_name} agent: {e}")
         text = f"Error: {str(e)}"
 
     response = {
         "id": str(uuid.uuid4()),
         "object": "chat.completion",
         "created": int(time.time()),
-        "model": req.model or GENERATOR_TYPE,
+        "model": req.model or LINKEDIN_MODEL_ID,
         "choices": [
             {
                 "index": 0,
@@ -109,7 +122,8 @@ async def chat_completions(req: ChatCompletionRequest):
 
 @app.post("/v1/completions")
 async def completions(req: CompletionRequest):
-    logger.info("Answering completion request using LinkedIn agent")
+    agent, agent_name = get_agent_for_model(req.model)
+    logger.info(f"Answering completion request using {agent_name} agent")
 
     # Extract prompt content
     if req.prompt is None:
@@ -119,49 +133,22 @@ async def completions(req: CompletionRequest):
     else:
         content = str(req.prompt)
 
-    # Always use LinkedIn agent
     try:
-
         # Use the agent to generate a response
         from langchain_core.messages import HumanMessage
         result = agent.invoke({"messages": [HumanMessage(content=content)]})
-
-        # Extract the text from the result
-        if isinstance(result, dict) and "messages" in result:
-            # Get the last message from the agent
-            messages = result["messages"]
-            if messages:
-                last_message = messages[-1]
-                if hasattr(last_message, 'content'):
-                    # Ensure content is properly extracted as string
-                    if isinstance(last_message.content, str):
-                        text = last_message.content
-                    elif isinstance(last_message.content, dict):
-                        # Handle case where content might be a dict with text field
-                        text = last_message.content.get('text', str(last_message.content))
-                    else:
-                        text = str(last_message.content)
-                else:
-                    text = str(last_message)
-            else:
-                text = "No response generated."
-        elif hasattr(result, 'content'):
-            # Handle case where result itself has content
-            text = result.content if isinstance(result.content, str) else str(result.content)
-        else:
-            text = str(result)
-
-        logger.info(f"Generated response using LinkedIn agent")
+        text = extract_response_text(result)
+        logger.info(f"Generated response using {agent_name} agent")
 
     except Exception as e:
-        logger.error(f"Error using LinkedIn agent: {e}")
+        logger.error(f"Error using {agent_name} agent: {e}")
         text = f"Error: {str(e)}"
 
     response = {
         "id": str(uuid.uuid4()),
         "object": "text_completion",
         "created": int(time.time()),
-        "model": req.model or GENERATOR_TYPE,
+        "model": req.model or LINKEDIN_MODEL_ID,
         "choices": [{"text": text, "index": 0, "finish_reason": "stop"}],
     }
     return response
@@ -176,7 +163,7 @@ async def health():
 async def list_linkedin_agents():
     """List all available LinkedIn post generation agents and their metadata."""
     try:
-        agents_info = agent.list_available_agents()
+        agents_info = linkedin_agent.list_available_agents()
 
         return {
             "object": "list",
@@ -189,30 +176,47 @@ async def list_linkedin_agents():
 
 @app.get("/v1/models")
 async def list_models():
-    model_info = {
-        "id": 'Linkedin-Post-Agent' ,
-        "object": "model",
-        "owned_by": "local",
-        # include lightweight metadata that some clients may inspect
-        "permission": [],
-    }
-    return {"object": "list", "data": [model_info]}
+    models = [
+        {
+            "id": LINKEDIN_MODEL_ID,
+            "object": "model",
+            "owned_by": "local",
+            "description": "LinkedIn post generation agent",
+            "permission": [],
+        },
+        {
+            "id": RAG_MODEL_ID,
+            "object": "model",
+            "owned_by": "local",
+            "description": "RAG agent for answering questions using document retrieval",
+            "permission": [],
+        },
+    ]
+    return {"object": "list", "data": models}
 
 
 @app.get("/v1/models/{model_id}")
 async def get_model(model_id: str):
     """Return a single model description or 404 if not found."""
-    expected_id = GENERATOR_TYPE or "local-model"
-    if model_id != expected_id:
-        # Follow OpenAI style: 404-like response (FastAPI will return 404 if we raise HTTPException)
-        from fastapi import HTTPException
+    available_models = {
+        LINKEDIN_MODEL_ID: {
+            "id": LINKEDIN_MODEL_ID,
+            "object": "model",
+            "owned_by": "local",
+            "description": "LinkedIn post generation agent",
+            "permission": [],
+        },
+        RAG_MODEL_ID: {
+            "id": RAG_MODEL_ID,
+            "object": "model",
+            "owned_by": "local",
+            "description": "RAG agent for answering questions using document retrieval",
+            "permission": [],
+        },
+    }
 
+    if model_id not in available_models:
+        from fastapi import HTTPException
         raise HTTPException(status_code=404, detail={"error": {"message": f"Model '{model_id}' not found"}})
 
-    model_info = {
-        "id": expected_id,
-        "object": "model",
-        "owned_by": "local",
-        "permission": [],
-    }
-    return model_info
+    return available_models[model_id]
