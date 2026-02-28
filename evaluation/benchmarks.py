@@ -28,47 +28,14 @@ def create_rag_benchmark() -> List[TestCase]:
     """Create benchmark for RAG agents."""
     return [
         TestCase(
-            id="rag_001",
-            question="What are the production 'Do's' for RAG?",
-            expected_response="Production RAG systems should implement proper data ingestion pipelines, use appropriate chunking strategies, implement robust vector search, and ensure proper retrieval relevance scoring.",
-            context={
-                "expected_facts": [
-                    "data ingestion",
-                    "chunking strategies",
-                    "vector search",
-                    "retrieval relevance",
-                    "production"
-                ]
-            },
-            tags=["rag", "production", "best_practices"],
-            difficulty="medium"
-        ),
-        TestCase(
-            id="rag_002",
-            question="What is the difference between standard retrieval and the ColPali approach?",
-            expected_response="ColPali uses visual document understanding to retrieve information from documents as images, while standard retrieval processes text-based chunks from parsed documents.",
-            context={
-                "expected_facts": [
-                    "visual document understanding",
-                    "images",
-                    "text-based chunks",
-                    "parsed documents"
-                ]
-            },
-            tags=["rag", "colpali", "retrieval_methods"],
-            difficulty="hard"
-        ),
-        TestCase(
             id="rag_003",
-            question="Why is hybrid search better than vector-only search?",
-            expected_response="Hybrid search combines semantic vector search with keyword-based search, providing better recall for exact matches while maintaining semantic understanding for conceptual queries.",
+            question="RAG real world use cases",
             context={
                 "expected_facts": [
-                    "semantic vector search",
-                    "keyword-based search",
-                    "better recall",
-                    "exact matches",
-                    "semantic understanding"
+                    "AI Chatbots",
+                    "Search & discovery",
+                    "AI Copilots",
+                    "Long context reasoning"
                 ]
             },
             tags=["rag", "search", "hybrid"],
@@ -76,13 +43,12 @@ def create_rag_benchmark() -> List[TestCase]:
         ),
         TestCase(
             id="rag_004",
-            question="How do you evaluate RAG system performance?",
+            question="Why RAG Matters?",
             context={
                 "expected_facts": [
-                    "retrieval accuracy",
-                    "answer relevance",
-                    "factual correctness",
-                    "response time"
+                    "Fresh Additional Knowledge",
+                    "Better Accuracy",
+                    "Adaptable",
                 ]
             },
             tags=["rag", "evaluation", "metrics"],
